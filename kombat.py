@@ -1,6 +1,22 @@
 import json
 import sys
 
+# diccionario con los movimientos y patadas
+MOVES_DIC = {
+  'DSDP': (3, 'le pega tremendo Taladoken al pobre {}'),
+  'ASAP': (2, 'sacude a {} con un Taladoken'),
+  'SAK': (3, 'le pega su buen Remuyuken al pobre {}'),
+  'SDK': (2, 'hace ver estrellas a {} con un Remuyuken'),
+
+  'P': (1, 'Puñetazo'),
+  'K': (1, 'Patada'),
+
+  'W': (0, 'Arriba'),
+  'S': (0, 'Izquierda'),
+  'A': (0, 'Abajo'),
+  'D': (0, 'Derecha'),
+}
+
 class Fighter:
   def __init__(self, name, moves_punches, energy=6):
     self.name = name
@@ -14,49 +30,30 @@ class Fighter:
     # obtiene la primera tupla
     move, punch = self.moves_punches.pop(0)
 
-    ############################
-    # TODO: ESTO SE PODRIA MOVER
-    ############################
-    moves_dic = {
-      'DSDP': (3, 'le pega tremendo Taladoken al pobre {}'),
-      'ASAP': (2, 'sacude a {} con un Taladoken'),
-      'SAK': (3, 'le pega su buen Remuyuken al pobre {}'),
-      'SDK': (2, 'hace ver estrellas a {} con un Remuyuken'),
-
-      'P': (1, 'Puñetazo'),
-      'K': (1, 'Patada'),
-
-      'W': (0, 'Arriba'),
-      'S': (0, 'Izquierda'),
-      'A': (0, 'Abajo'),
-      'D': (0, 'Derecha'),
-    }
-
     # Al iniciar se valida la combinación de ataques (special_action) y se obtien el daño (damage)
-    damage = 0
-    special_action = ''
+    damage, special_action = 0, ''
 
     if move and punch:
       # para los Taladoken se tiene una combinación de 3 movimientos más un golpe P
       move_punch_combo = move[-3:] + punch
-      if move_punch_combo in moves_dic:
-        damage, special_action = moves_dic[move_punch_combo]
+      if move_punch_combo in MOVES_DIC:
+        damage, special_action = MOVES_DIC[move_punch_combo]
         moves.extend(list(move.replace(move[-3:], '')))
       else:
         # si no hay Taladoken: los Remuyuken tienen una combinación de 2 movimientos más un golpe K
         move_punch_combo = move[-2:] + punch
-        if move_punch_combo in moves_dic:
-          damage, special_action = moves_dic[move_punch_combo]
+        if move_punch_combo in MOVES_DIC:
+          damage, special_action = MOVES_DIC[move_punch_combo]
           moves.extend(list(move.replace(move[-2:], '')))
         else:
           # no se encuentran movimientos especiales, todos son movimientos ordinarios
           is_special_action = False
-          damage, _ = moves_dic.get(punch, (0, ''))
+          damage, _ = MOVES_DIC.get(punch, (0, ''))
           moves.extend(list(move))
     else:
       # no se encuentran movimientos especiales, todos son movimientos ordinarios
       is_special_action = False
-      damage, _ = moves_dic.get(punch, (0, ''))
+      damage, _ = MOVES_DIC.get(punch, (0, ''))
       moves.extend(list(move))
 
     # print(
@@ -74,14 +71,13 @@ class Fighter:
       if len(moves) == 0 and len(punch) > 0:
         narrativa = 'se queda quieto'
       if len(punch) > 0:
-        _, action = moves_dic.get(punch, ())
+        _, action = MOVES_DIC.get(punch, ())
         narrativa += (f' y le pega su {action}' if len(narrativa) > 0 else f'le pega su {action}')
 
     if is_special_action:
         narrativa += (f' y {special_action}' if len(narrativa) > 0 else special_action)
 
     return damage, narrativa
-
 
 class Kombat:
   def __init__(self, player1, player2):
@@ -176,7 +172,6 @@ def init(data_file):
   kombat = Kombat(tony, arnold)
   # se iniciar la pelea
   kombat.fight()
-
 
 if __name__ == '__main__':
   # verificar que se pasa como argumento el archivo json
