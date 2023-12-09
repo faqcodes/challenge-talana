@@ -85,3 +85,31 @@ Y luego ejecutar normalmente:
 ```
 python kombat.py data/nuevos_datos_de_pelea.json
 ```
+
+# Respuesta a Preguntas:
+
+1. Supongamos que en un repositorio GIT hiciste un commit y olvidaste un archivo. Explica cómo se soluciona si hiciste push, y cómo si aún no hiciste
+```
+En ambos casos y (de ser posible, que quede solo un commit con los cambios), modifico el commit con el flag 'amed' y fuerzo un nuevo push al repo
+```
+
+2. Si has trabajado con control de versiones ¿Cuáles han sido los flujos con los que has trabajado?
+```
+He trabajado con GitFlow y con TBD (y antiguamente con SVN no seguíamos flujos)
+```
+
+3. ¿Cuál ha sido la situación más compleja que has tenido con esto?
+
+```
+Con GitFlow ha sido la creación de varias ramas que tocan las mismas piezas de código, entonces, al tratar de fusionar no es cosa fácil. Más cuando es fecha de entrega. Entonces, la dificultad se ha dado en fusionar y en ocaciones son tantos los conflictos he tenido que reunirme con el equipo solo para hacer este trabajo y ha llevado bastante tiempo. Ahora trato de evitar asignar tareas que toquen las mismas piezas de código, y si lo hacen, las personas tienen que estar en constante comunicación.
+```
+
+4. ¿Qué experiencia has tenido con los microservicios?
+```
+Desde que trabajé en Walmart, me tocó hacer un POS en la nube desde cero. Entonces, tuve que diseñar los microservicios. Esto fue en Azure con docker y Kubernetes, aplicando patrón Saga y la comunicación con gRPC. En general, lo miscroservicios los he trabajado con API Rest y utilizando Docker/Kubertes en distintas nubes: AWS, GCP y Azure, utilizando patrones Saga y/o Orchestrator
+```
+
+5. ¿Cuál es tu servicio favorito de GCP o AWS? ¿Por qué?
+```
+AWS me gusta más porque.... a mi parecer tienen mejor documentación y más servicios que las otras nubes... y trabajado más con AWS que con otras nubes tocando varios servicios: API Gateway, Lambda, Step Functions, SQS, SNS, DynamoDB... entonces es mi favorito
+```
