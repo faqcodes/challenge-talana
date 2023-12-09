@@ -7,10 +7,8 @@ MOVES_DIC = {
   'ASAP': (2, 'sacude a {} con un Taladoken'),
   'SAK': (3, 'le pega su buen Remuyuken al pobre {}'),
   'SDK': (2, 'hace ver estrellas a {} con un Remuyuken'),
-
   'P': (1, 'Puñetazo'),
   'K': (1, 'Patada'),
-
   'W': (0, 'Arriba'),
   'S': (0, 'Izquierda'),
   'A': (0, 'Abajo'),
@@ -25,36 +23,33 @@ class Fighter:
 
   def attack(self):
     moves = list()
-    is_special_action = True
+    is_special_action = False
 
     # obtiene la primera tupla
     move, punch = self.moves_punches.pop(0)
 
     # Al iniciar se valida la combinación de ataques (special_action) y se obtien el daño (damage)
     damage, special_action = 0, ''
+    taladoken, remuyuken = '', ''
 
     if move and punch:
       # para los Taladoken se tiene una combinación de 3 movimientos más un golpe P
-      move_punch_combo = move[-3:] + punch
-      if move_punch_combo in MOVES_DIC:
-        damage, special_action = MOVES_DIC[move_punch_combo]
-        moves.extend(list(move.replace(move[-3:], '')))
-      else:
-        # si no hay Taladoken: los Remuyuken tienen una combinación de 2 movimientos más un golpe K
-        move_punch_combo = move[-2:] + punch
-        if move_punch_combo in MOVES_DIC:
-          damage, special_action = MOVES_DIC[move_punch_combo]
-          moves.extend(list(move.replace(move[-2:], '')))
-        else:
-          # no se encuentran movimientos especiales, todos son movimientos ordinarios
-          is_special_action = False
-          damage, _ = MOVES_DIC.get(punch, (0, ''))
-          moves.extend(list(move))
-    else:
-      # no se encuentran movimientos especiales, todos son movimientos ordinarios
-      is_special_action = False
-      damage, _ = MOVES_DIC.get(punch, (0, ''))
-      moves.extend(list(move))
+      taladoken = move[-3:] + punch
+      damage, special_action = MOVES_DIC.get(taladoken, (0, ''))
+
+      # para los Remuyuken tienen una combinación de 2 movimientos más un golpe K
+      if not (special_action and damage):
+        remuyuken = move[-2:] + punch
+        damage, special_action = MOVES_DIC.get(remuyuken, (0, ''))
+
+      if special_action and damage:
+        punch = ''
+        is_special_action = True
+        spaces = min(len(taladoken), len(remuyuken)) if remuyuken else len(taladoken)
+        move = move.replace(move[-(spaces - 1):], '')
+
+    damage, _ = MOVES_DIC.get(punch, (damage, ''))
+    moves.extend(list(move))
 
     # print(
     #   f'damage: {damage}, is special: {is_special_action}, action: {special_action}, extra moves: {moves}'
@@ -63,19 +58,20 @@ class Fighter:
     # se detalla narrativa
     narrativa = ''
 
+    if moves:
+      narrativa = 'se mueve ágilmente'
+
     if not is_special_action:
-      if len(moves) > 0:
-        narrativa = 'se mueve ágilmente'
-      if len(moves) > 0 and len(punch) == 0:
+      if moves and not punch:
         narrativa = 'hace algunos movimientos exóticos sin ningún daño... ({} se ríe)'
-      if len(moves) == 0 and len(punch) > 0:
+      if not moves and punch:
         narrativa = 'se queda quieto'
-      if len(punch) > 0:
+      if punch:
         _, action = MOVES_DIC.get(punch, ())
-        narrativa += (f' y le pega su {action}' if len(narrativa) > 0 else f'le pega su {action}')
+        narrativa += (f' y le pega su {action}' if narrativa else f'le pega su {action}')
 
     if is_special_action:
-        narrativa += (f' y {special_action}' if len(narrativa) > 0 else special_action)
+        narrativa += (f' y {special_action}' if narrativa else special_action)
 
     return damage, narrativa
 
@@ -137,16 +133,14 @@ class Kombat:
 
       # switch: cambio de turno de los jugadores
       # si un jugador se queda sin movimientos, el otro continúa hasta terminar... sin piedad
-      switch = len(opponent.moves_punches) > 0
-
-      if (switch):
+      if (opponent.moves_punches):
         tmp = attacker
         attacker = opponent
         opponent = tmp
 
       # si ya no quedan movimientos, se termina el combate
       # el ganador será el que tienen más energía
-      if (len(attacker.moves_punches) == 0):
+      if (not attacker.moves_punches):
         print('\nNo hubo Fatality pero hay ganador!')
         print(f'{attacker.name} gana la pelea con {attacker.energy} de energía.')
         print(f'El probre {opponent.name} quedó con algo de energía: {opponent.energy}\n')
