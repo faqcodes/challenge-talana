@@ -1,3 +1,6 @@
+import json
+import sys
+
 class Fighter:
   def __init__(self, name, moves_punches, energy=6):
     self.name = name
@@ -33,30 +36,25 @@ class Fighter:
     damage = 0
     special_action = ''
 
-    # para los Taladoken se tiene una combinación de 3 movimientos más un golpe P
-    if (len(move) > 0 and len(punch) > 0):
-      damage, special_action = moves_dic.get(
-        move[-3:] + punch, (0, 'NOT_FOUND'))
-
-      if (special_action == 'NOT_FOUND'):
-        # si no hay Taladoken: para los Remuyuken se tiene una combinación de 2 movimientos más un golpe K
-        damage, special_action = moves_dic.get(
-          move[-2:] + punch, (0, 'NOT_FOUND')
-        )
-
-        if (special_action == 'NOT_FOUND'):
-          # si no se encuentran movimientos especiales, todos son movimientos ordinarios
+    if move and punch:
+      # para los Taladoken se tiene una combinación de 3 movimientos más un golpe P
+      move_punch_combo = move[-3:] + punch
+      if move_punch_combo in moves_dic:
+        damage, special_action = moves_dic[move_punch_combo]
+        moves.extend(list(move.replace(move[-3:], '')))
+      else:
+        # si no hay Taladoken: los Remuyuken tienen una combinación de 2 movimientos más un golpe K
+        move_punch_combo = move[-2:] + punch
+        if move_punch_combo in moves_dic:
+          damage, special_action = moves_dic[move_punch_combo]
+          moves.extend(list(move.replace(move[-2:], '')))
+        else:
+          # no se encuentran movimientos especiales, todos son movimientos ordinarios
           is_special_action = False
           damage, _ = moves_dic.get(punch, (0, ''))
           moves.extend(list(move))
-        else:
-          moves.extend(list(move.replace(move[-2:], '')))  # ??? validar
-
-      else:
-        moves.extend(list(move.replace(move[-3:], '')))  # ??? validar
-
-    # no se encuentran movimientos especiales, todos son movimientos ordinarios
     else:
+      # no se encuentran movimientos especiales, todos son movimientos ordinarios
       is_special_action = False
       damage, _ = moves_dic.get(punch, (0, ''))
       moves.extend(list(move))
@@ -158,42 +156,33 @@ class Kombat:
         print(f'El probre {opponent.name} quedó con algo de energía: {opponent.energy}\n')
         break
 
-# data de ejemplos:
-data = {
-  'player1': {'movimientos': ['D', 'DSD', 'S', 'DSD', 'SD'], 'golpes': ['K', 'P', '', 'K', 'P']},
-  'player2': {'movimientos': ['SA', 'SA', 'SA', 'ASA', 'SA'], 'golpes': ['K', '', 'K', 'P', 'P']}
-}
+def init(data_file):
+  with open(data_file, 'r') as file:
+    data = json.load(file)
 
-# gana Tonyn
-# data = {
-#   'player1':{'movimientos':['SDD', 'DSD', 'SA', 'DSD'] ,'golpes':['K', 'P', 'K', 'P']},
-#   'player2':{'movimientos':['DSD', 'WSAW', 'ASA', '', 'ASA', 'SA'],'golpes':['P', 'K', 'K', 'K', 'P', 'k']}
-# }
+  # obtiene movimientos y golpes (tupla) para cada jugador desde data
+  player1_moves = [
+    (move, punch) for move, punch in zip(data['player1']['movimientos'], data['player1']['golpes'])
+  ]
+  player2_moves = [
+    (move, punch) for move, punch in zip(data['player2']['movimientos'], data['player2']['golpes'])
+  ]
 
-# gana Arnaldor
-# data = {
-#   'player1':{'movimientos':['DSD', 'S'] ,'golpes':[ 'P', '']},
-#   'player2':{'movimientos':['', 'ASA', 'DA', 'AAA', '', 'SA'],'golpes':['P', '', 'P', 'K', 'K', 'K']}
-# }
+  # crear instancias de los jugadores
+  tony = Fighter('Tonyn', player1_moves)
+  arnold = Fighter('Arnaldor', player2_moves)
 
-# data = {
-#   'player1':{'movimientos':['', 'ASA', 'DA', 'AAA', '', 'SAA'],'golpes':['P', '', 'P', 'K', 'K', 'K']},
-#   'player2':{'movimientos':['DSD', 'S'] ,'golpes':[ 'P', '']}
-# }
+  # crea instancia del combate
+  kombat = Kombat(tony, arnold)
+  # se iniciar la pelea
+  kombat.fight()
 
-# obtiene movimientos y golpes (tupla) para cada jugador desde data
-player1_moves = [
-  (move, punch) for move, punch in zip(data['player1']['movimientos'], data['player1']['golpes'])
-]
-player2_moves = [
-  (move, punch) for move, punch in zip(data['player2']['movimientos'], data['player2']['golpes'])
-]
 
-# crear instancias de los jugadores
-tony = Fighter('Tonyn', player1_moves)
-arnold = Fighter('Arnaldor', player2_moves)
-
-# crea instancia del combate
-kombat = Kombat(tony, arnold)
-# se iniciar la pelea
-kombat.fight()
+if __name__ == '__main__':
+  # verificar que se pasa como argumento el archivo json
+  if len(sys.argv) != 2:
+    print('USO: python kombat.py {kombat_data}.json\n')
+    print('donde {kombat_data}: archivo json que contiene los jugadores y sus movimientos\n')
+  else:
+    # inicializa enviando los datos
+    init(sys.argv[1])
